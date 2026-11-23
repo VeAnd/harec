@@ -2171,11 +2171,15 @@ parse_binding_list(struct lexer *lexer, bool is_static)
 	struct ast_expression *exp = mkexpr(lexer->loc);
 
 	struct token tok = {0};
+	bool is_const = false;
 	switch (lex(lexer, &tok)) {
 	case T_DEF:
 		exp->type = EXPR_DEFINE;
 		break;
 	case T_CONST:
+	    exp->type = EXPR_BINDING;
+	    is_const = true;
+	    break;
 	case T_LET:
 		exp->type = EXPR_BINDING;
 		break;
@@ -2186,6 +2190,7 @@ parse_binding_list(struct lexer *lexer, bool is_static)
 	struct ast_expression_binding *binding = &exp->binding;
 
 	do {
+	    binding->is_const = is_const;
 		switch (lex(lexer, &tok)) {
 		case T_NAME:
 			binding->names.name =

@@ -185,6 +185,7 @@ struct ast_expression_binding {
 	struct ast_binding_names names;
 	struct ast_type *type;
 	bool is_static;
+	bool is_const;
 	struct ast_expression *initializer;
 	struct ast_expression_binding *next;
 };

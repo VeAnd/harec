@@ -25,6 +25,7 @@ struct scope_object {
 	struct ident *name;
 	struct ident *ident;
 	enum scope_object_flags flags;
+	bool is_const;
 
 	union {
 		const struct type *type;

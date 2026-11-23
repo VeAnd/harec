@@ -1036,6 +1036,17 @@ check_expr_assign(struct context *ctx,
 
 	struct expression *object = xcalloc(1, sizeof(struct expression));
 	check_expression(ctx, aexpr->assign.object, object, NULL);
+
+    if (aexpr->assign.object->type == EXPR_ACCESS
+            && aexpr->assign.object->access.type == ACCESS_IDENTIFIER) {
+        struct scope_object *assigned = scope_lookup(ctx->scope,
+            aexpr->assign.object->access.ident);
+        if (assigned != NULL && assigned->is_const) {
+            error(ctx, aexpr->assign.object->loc, expr,
+                "Cannot assign to constant");
+            return;
+        }
+    }
 	check_expression(ctx, aexpr->assign.value, value, object->result);
 
 	if (object->type == EXPR_LITERAL
@@ -1497,13 +1508,17 @@ check_expr_binding(struct context *ctx,
 		} else if (abinding->names.name != NULL) {
 			if (abinding->is_static) {
 				// Generate a static declaration ident
-				binding->object = scope_insert(ctx->scope, O_DECL,
+				struct scope_object *obj = scope_insert(ctx->scope, O_DECL,
 					intern_generated(ctx, "static.%d"),
 					abinding->names.name, type, NULL);
+				obj->is_const = abinding->is_const;
+				binding->object = obj;
 			} else {
-				binding->object = scope_insert(ctx->scope, O_BIND,
+				struct scope_object *obj = scope_insert(ctx->scope, O_BIND,
 					abinding->names.name, abinding->names.name,
 					type, NULL);
+				obj->is_const = abinding->is_const;
+				binding->object = obj;
 			}
 		}
 
